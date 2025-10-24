@@ -63,6 +63,9 @@ command! SpotifySearch lua require('macos-spotify').telescope_search()
 " Browse all tracks
 command! SpotifyTracks lua require('macos-spotify').telescope_tracks()
 
+" Debug command for troubleshooting
+command! SpotifyDebug lua require('macos-spotify').debug()
+
 " Auto-setup with default config if not already configured
 " Users can override this with their own setup() call in their config
 if !exists('g:macos_spotify_configured')

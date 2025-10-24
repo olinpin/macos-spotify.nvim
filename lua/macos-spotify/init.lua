@@ -247,6 +247,12 @@ function M.telescope_tracks(opts)
   telescope_integration.all_tracks(opts)
 end
 
+-- Debug function
+function M.debug()
+  local debug = require('macos-spotify.debug')
+  debug.test_spotify_connection()
+end
+
 -- Export all spotify functions
 M.play_pause = spotify.play_pause
 M.next_track = spotify.next_track

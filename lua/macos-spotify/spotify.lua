@@ -357,26 +357,29 @@ function M.get_playlists()
   end
   
   local script = [[
-    tell application "Spotify"
-      set playlistData to ""
-      set playlistCount to 0
-      repeat with aPlaylist in user playlists
-        if playlistCount > 0 then
-          set playlistData to playlistData & linefeed
-        end if
-        set playlistData to playlistData & (name of aPlaylist) & "|" & (id of aPlaylist) & "|" & (count of tracks of aPlaylist)
-        set playlistCount to playlistCount + 1
-      end repeat
-      return playlistData
-    end tell
-  ]]
+tell application "Spotify"
+  set playlistData to ""
+  set playlistCount to 0
+  
+  repeat with aPlaylist in playlists
+    if playlistCount > 0 then
+      set playlistData to playlistData & linefeed
+    end if
+    
+    set playlistData to playlistData & (name of aPlaylist) & "|" & (id of aPlaylist) & "|" & (count of tracks of aPlaylist)
+    set playlistCount to playlistCount + 1
+  end repeat
+  
+  return playlistData
+end tell
+]]
   
   local result = utils.execute_osascript(script)
   
   if result.success and result.output ~= "" then
     local playlists = {}
-    -- Split by newline (AppleScript returns list items separated by newlines when converted to text)
-    for line in result.output:gmatch("[^\n]+") do
+    -- Split by newline
+    for line in result.output:gmatch("[^\r\n]+") do
       local parts = utils.split(line, "|")
       if #parts >= 3 then
         table.insert(playlists, {
@@ -401,41 +404,44 @@ function M.get_playlist_tracks(playlist_uri)
     return nil
   end
   
-  -- First get the playlist by URI
   local script = string.format([[
-    tell application "Spotify"
-      set targetPlaylist to null
-      repeat with aPlaylist in user playlists
-        if id of aPlaylist is "%s" then
-          set targetPlaylist to aPlaylist
-          exit repeat
+tell application "Spotify"
+  set targetPlaylist to null
+  
+  repeat with aPlaylist in playlists
+    if id of aPlaylist is "%s" then
+      set targetPlaylist to aPlaylist
+      exit repeat
+    end if
+  end repeat
+  
+  if targetPlaylist is not null then
+    set trackData to ""
+    set trackCount to 0
+    
+    repeat with aTrack in tracks of targetPlaylist
+      try
+        if trackCount > 0 then
+          set trackData to trackData & linefeed
         end if
-      end repeat
-      
-      if targetPlaylist is not null then
-        set trackData to ""
-        set trackCount to 0
-        repeat with aTrack in tracks of targetPlaylist
-          try
-            if trackCount > 0 then
-              set trackData to trackData & linefeed
-            end if
-            set trackData to trackData & (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
-            set trackCount to trackCount + 1
-          end try
-        end repeat
-        return trackData
-      else
-        return ""
-      end if
-    end tell
-  ]], playlist_uri)
+        
+        set trackData to trackData & (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
+        set trackCount to trackCount + 1
+      end try
+    end repeat
+    
+    return trackData
+  else
+    return ""
+  end if
+end tell
+]], playlist_uri)
   
   local result = utils.execute_osascript(script)
   
   if result.success and result.output ~= "" then
     local tracks = {}
-    for line in result.output:gmatch("[^\n]+") do
+    for line in result.output:gmatch("[^\r\n]+") do
       local parts = utils.split(line, "|")
       if #parts >= 4 then
         table.insert(tracks, {
@@ -500,16 +506,16 @@ function M.play_playlist(playlist_uri)
   
   -- Find and play the playlist
   local script = string.format([[
-    tell application "Spotify"
-      repeat with aPlaylist in user playlists
-        if id of aPlaylist is "%s" then
-          play aPlaylist
-          return "success"
-        end if
-      end repeat
-      return "not found"
-    end tell
-  ]], playlist_uri)
+tell application "Spotify"
+  repeat with aPlaylist in playlists
+    if id of aPlaylist is "%s" then
+      play aPlaylist
+      return "success"
+    end if
+  end repeat
+  return "not found"
+end tell
+]], playlist_uri)
   
   local result = utils.execute_osascript(script)
   
@@ -545,43 +551,45 @@ function M.get_saved_tracks(limit)
   -- Note: AppleScript access to Spotify doesn't provide direct access to "Liked Songs"
   -- We'll search for tracks in the user's library instead
   local script = string.format([[
-    tell application "Spotify"
-      -- Try to get tracks from "Liked Songs" or similar playlist
-      set likedPlaylist to null
-      repeat with aPlaylist in user playlists
-        if name of aPlaylist contains "Liked" or name of aPlaylist contains "Favorite" then
-          set likedPlaylist to aPlaylist
-          exit repeat
-        end if
-      end repeat
+tell application "Spotify"
+  set likedPlaylist to null
+  
+  repeat with aPlaylist in playlists
+    if name of aPlaylist contains "Liked" or name of aPlaylist contains "Favorite" then
+      set likedPlaylist to aPlaylist
+      exit repeat
+    end if
+  end repeat
+  
+  if likedPlaylist is not null then
+    set trackData to ""
+    set trackCount to 0
+    
+    repeat with aTrack in tracks of likedPlaylist
+      if trackCount >= %d then exit repeat
       
-      if likedPlaylist is not null then
-        set trackData to ""
-        set trackCount to 0
-        set firstTrack to true
-        repeat with aTrack in tracks of likedPlaylist
-          if trackCount >= %d then exit repeat
-          try
-            if not firstTrack then
-              set trackData to trackData & linefeed
-            end if
-            set trackData to trackData & (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
-            set trackCount to trackCount + 1
-            set firstTrack to false
-          end try
-        end repeat
-        return trackData
-      else
-        return ""
-      end if
-    end tell
-  ]], limit)
+      try
+        if trackCount > 0 then
+          set trackData to trackData & linefeed
+        end if
+        
+        set trackData to trackData & (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
+        set trackCount to trackCount + 1
+      end try
+    end repeat
+    
+    return trackData
+  else
+    return ""
+  end if
+end tell
+]], limit)
   
   local result = utils.execute_osascript(script)
   
   if result.success and result.output ~= "" then
     local tracks = {}
-    for line in result.output:gmatch("[^\n]+") do
+    for line in result.output:gmatch("[^\r\n]+") do
       local parts = utils.split(line, "|")
       if #parts >= 4 then
         table.insert(tracks, {

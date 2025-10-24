@@ -41,12 +41,25 @@ function M.execute_osascript(script)
     }
   end
   
-  -- Escape double quotes in the script
-  local escaped_script = script:gsub('"', '\\"')
-  local cmd = string.format('osascript -e "%s" 2>&1', escaped_script)
+  -- Create a temporary file for the script
+  local temp_file = os.tmpname()
+  local file = io.open(temp_file, "w")
+  if not file then
+    return {
+      success = false,
+      output = "",
+      error = "Failed to create temporary script file"
+    }
+  end
   
+  file:write(script)
+  file:close()
+  
+  -- Execute the script from the file
+  local cmd = string.format('osascript "%s" 2>&1', temp_file)
   local handle = io.popen(cmd)
   if not handle then
+    os.remove(temp_file)
     return {
       success = false,
       output = "",
@@ -55,12 +68,15 @@ function M.execute_osascript(script)
   end
   
   local output = handle:read("*a")
-  local success = handle:close()
+  local exit_code = handle:close()
+  
+  -- Clean up temp file
+  os.remove(temp_file)
   
   -- Remove trailing whitespace
   output = output:gsub("%s+$", "")
   
-  if success then
+  if exit_code then
     return {
       success = true,
       output = output,

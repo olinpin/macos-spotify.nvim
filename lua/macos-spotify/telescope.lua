@@ -40,8 +40,11 @@ function M.playlists(opts)
   -- Get playlists
   local playlists = spotify.get_playlists()
   
-  if not playlists or #playlists == 0 then
-    utils.notify("No playlists found", "warn")
+  if not playlists then
+    utils.notify("Failed to retrieve playlists. Run :SpotifyDebug for details", "error")
+    return
+  elseif #playlists == 0 then
+    utils.notify("No playlists found in your Spotify library", "warn")
     return
   end
   
