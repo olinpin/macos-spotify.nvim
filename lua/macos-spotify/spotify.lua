@@ -348,4 +348,286 @@ function M.get_status()
   return status
 end
 
+--- Get all user playlists
+-- @return table|nil Array of playlists {name: string, uri: string, track_count: number}
+function M.get_playlists()
+  local ok, err = check_spotify()
+  if not ok then
+    return nil
+  end
+  
+  local script = [[
+    tell application "Spotify"
+      set playlistData to {}
+      repeat with aPlaylist in user playlists
+        set playlistInfo to (name of aPlaylist) & "|" & (id of aPlaylist) & "|" & (count of tracks of aPlaylist)
+        set end of playlistData to playlistInfo
+      end repeat
+      return playlistData as text
+    end tell
+  ]]
+  
+  local result = utils.execute_osascript(script)
+  
+  if result.success and result.output ~= "" then
+    local playlists = {}
+    -- Split by newline (AppleScript returns list items separated by newlines when converted to text)
+    for line in result.output:gmatch("[^\n]+") do
+      local parts = utils.split(line, "|")
+      if #parts >= 3 then
+        table.insert(playlists, {
+          name = utils.trim(parts[1]),
+          uri = utils.trim(parts[2]),
+          track_count = tonumber(parts[3]) or 0
+        })
+      end
+    end
+    return playlists
+  end
+  
+  return nil
+end
+
+--- Get tracks from a specific playlist
+-- @param playlist_uri string The Spotify URI of the playlist
+-- @return table|nil Array of tracks
+function M.get_playlist_tracks(playlist_uri)
+  local ok, err = check_spotify()
+  if not ok then
+    return nil
+  end
+  
+  -- First get the playlist by URI
+  local script = string.format([[
+    tell application "Spotify"
+      set targetPlaylist to null
+      repeat with aPlaylist in user playlists
+        if id of aPlaylist is "%s" then
+          set targetPlaylist to aPlaylist
+          exit repeat
+        end if
+      end repeat
+      
+      if targetPlaylist is not null then
+        set trackData to {}
+        repeat with aTrack in tracks of targetPlaylist
+          try
+            set trackInfo to (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
+            set end of trackData to trackInfo
+          end try
+        end repeat
+        return trackData as text
+      else
+        return ""
+      end if
+    end tell
+  ]], playlist_uri)
+  
+  local result = utils.execute_osascript(script)
+  
+  if result.success and result.output ~= "" then
+    local tracks = {}
+    for line in result.output:gmatch("[^\n]+") do
+      local parts = utils.split(line, "|")
+      if #parts >= 4 then
+        table.insert(tracks, {
+          name = utils.trim(parts[1]),
+          artist = utils.trim(parts[2]),
+          album = utils.trim(parts[3]),
+          uri = utils.trim(parts[4]),
+          display = string.format("%s - %s", utils.trim(parts[1]), utils.trim(parts[2]))
+        })
+      end
+    end
+    return tracks
+  end
+  
+  return nil
+end
+
+--- Play a specific track by URI
+-- @param track_uri string The Spotify URI of the track
+-- @return boolean success status
+function M.play_track(track_uri)
+  local ok, err = check_spotify()
+  if not ok then
+    if M.config.notifications then
+      utils.notify(err, "warn")
+    end
+    return false
+  end
+  
+  local script = string.format('tell application "Spotify" to play track "%s"', track_uri)
+  local result = utils.execute_osascript(script)
+  
+  if result.success then
+    if M.config.notifications and M.config.show_track_info then
+      vim.defer_fn(function()
+        local track = M.get_current_track()
+        if track then
+          utils.notify("▶ Playing: " .. track.display, "info")
+        end
+      end, 300)
+    end
+    return true
+  else
+    if M.config.notifications then
+      utils.notify("Failed to play track: " .. result.error, "error")
+    end
+    return false
+  end
+end
+
+--- Play a specific playlist by URI
+-- @param playlist_uri string The Spotify URI of the playlist
+-- @return boolean success status
+function M.play_playlist(playlist_uri)
+  local ok, err = check_spotify()
+  if not ok then
+    if M.config.notifications then
+      utils.notify(err, "warn")
+    end
+    return false
+  end
+  
+  -- Find and play the playlist
+  local script = string.format([[
+    tell application "Spotify"
+      repeat with aPlaylist in user playlists
+        if id of aPlaylist is "%s" then
+          play aPlaylist
+          return "success"
+        end if
+      end repeat
+      return "not found"
+    end tell
+  ]], playlist_uri)
+  
+  local result = utils.execute_osascript(script)
+  
+  if result.success and result.output == "success" then
+    if M.config.notifications then
+      vim.defer_fn(function()
+        local track = M.get_current_track()
+        if track then
+          utils.notify("▶ Playing playlist: " .. track.display, "info")
+        end
+      end, 300)
+    end
+    return true
+  else
+    if M.config.notifications then
+      utils.notify("Failed to play playlist", "error")
+    end
+    return false
+  end
+end
+
+--- Get all saved tracks (liked songs)
+-- @param limit number|nil Maximum number of tracks to return (default: 50)
+-- @return table|nil Array of tracks
+function M.get_saved_tracks(limit)
+  local ok, err = check_spotify()
+  if not ok then
+    return nil
+  end
+  
+  limit = limit or 50
+  
+  -- Note: AppleScript access to Spotify doesn't provide direct access to "Liked Songs"
+  -- We'll search for tracks in the user's library instead
+  local script = string.format([[
+    tell application "Spotify"
+      -- Try to get tracks from "Liked Songs" or similar playlist
+      set likedPlaylist to null
+      repeat with aPlaylist in user playlists
+        if name of aPlaylist contains "Liked" or name of aPlaylist contains "Favorite" then
+          set likedPlaylist to aPlaylist
+          exit repeat
+        end if
+      end repeat
+      
+      if likedPlaylist is not null then
+        set trackData to {}
+        set trackCount to 0
+        repeat with aTrack in tracks of likedPlaylist
+          if trackCount >= %d then exit repeat
+          try
+            set trackInfo to (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
+            set end of trackData to trackInfo
+            set trackCount to trackCount + 1
+          end try
+        end repeat
+        return trackData as text
+      else
+        return ""
+      end if
+    end tell
+  ]], limit)
+  
+  local result = utils.execute_osascript(script)
+  
+  if result.success and result.output ~= "" then
+    local tracks = {}
+    for line in result.output:gmatch("[^\n]+") do
+      local parts = utils.split(line, "|")
+      if #parts >= 4 then
+        table.insert(tracks, {
+          name = utils.trim(parts[1]),
+          artist = utils.trim(parts[2]),
+          album = utils.trim(parts[3]),
+          uri = utils.trim(parts[4]),
+          display = string.format("%s - %s", utils.trim(parts[1]), utils.trim(parts[2]))
+        })
+      end
+    end
+    return tracks
+  end
+  
+  return nil
+end
+
+--- Search for tracks across all playlists
+-- @param query string Search query
+-- @return table|nil Array of matching tracks
+function M.search_tracks(query)
+  local ok, err = check_spotify()
+  if not ok then
+    return nil
+  end
+  
+  if not query or query == "" then
+    return {}
+  end
+  
+  -- Convert query to lowercase for case-insensitive matching
+  local lower_query = string.lower(query)
+  
+  -- Get all playlists and search through their tracks
+  local playlists = M.get_playlists()
+  if not playlists then
+    return nil
+  end
+  
+  local results = {}
+  local seen_uris = {}  -- Avoid duplicates
+  
+  for _, playlist in ipairs(playlists) do
+    local tracks = M.get_playlist_tracks(playlist.uri)
+    if tracks then
+      for _, track in ipairs(tracks) do
+        if not seen_uris[track.uri] then
+          local track_text = string.lower(track.name .. " " .. track.artist .. " " .. track.album)
+          if track_text:find(lower_query, 1, true) then
+            table.insert(results, track)
+            seen_uris[track.uri] = true
+          end
+        end
+      end
+    end
+  end
+  
+  return results
+end
+
 return M

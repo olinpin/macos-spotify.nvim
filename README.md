@@ -14,6 +14,7 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
 - ⏱️ **Playback Position**: Seek to specific positions in tracks
 - 🪟 **Beautiful UI**: Floating windows with formatted track information
 - 🔔 **Smart Notifications**: Configurable notifications for all actions
+- 🔭 **Telescope Integration**: Browse playlists, search tracks, and play songs with Telescope.nvim
 - ⚡ **Fast & Lightweight**: Uses native AppleScript for instant response
 - 🛠️ **Easy Configuration**: Simple Lua-based setup
 
@@ -22,6 +23,7 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
 - **macOS**: This plugin uses AppleScript and only works on macOS
 - **Neovim 0.7+**: Requires modern Neovim with Lua support
 - **Spotify**: The Spotify application must be installed and running
+- **Telescope.nvim** (optional): Required for browsing playlists and searching tracks
 
 ## 📦 Installation
 
@@ -29,7 +31,10 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
 
 ```lua
 {
-  'olinpin/macos-spotify-nvim',
+  'olinpin/macos-spotify.nvim',
+  dependencies = {
+    'nvim-telescope/telescope.nvim', -- Optional, for browsing playlists and searching
+  },
   config = function()
     require('macos-spotify').setup({
       notifications = true,
@@ -38,11 +43,17 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
     })
   end,
   keys = {
+    -- Playback controls
     { '<leader>sp', '<cmd>SpotifyPlayPause<cr>', desc = 'Spotify: Play/Pause' },
     { '<leader>sn', '<cmd>SpotifyNext<cr>', desc = 'Spotify: Next Track' },
     { '<leader>sb', '<cmd>SpotifyPrevious<cr>', desc = 'Spotify: Previous Track' },
     { '<leader>ss', '<cmd>SpotifyShowTrack<cr>', desc = 'Spotify: Show Track' },
     { '<leader>st', '<cmd>SpotifyStatus<cr>', desc = 'Spotify: Status' },
+    
+    -- Telescope integration
+    { '<leader>sP', '<cmd>SpotifyPlaylists<cr>', desc = 'Spotify: Browse Playlists' },
+    { '<leader>sf', '<cmd>SpotifySearch<cr>', desc = 'Spotify: Search Tracks' },
+    { '<leader>sT', '<cmd>SpotifyTracks<cr>', desc = 'Spotify: Browse All Tracks' },
   },
 }
 ```
@@ -51,7 +62,7 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
 
 ```lua
 use {
-  'yourusername/macos-spotify-nvim',
+  'yourusername/macos-spotify.nvim',
   config = function()
     require('macos-spotify').setup()
   end
@@ -61,7 +72,7 @@ use {
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'yourusername/macos-spotify-nvim'
+Plug 'yourusername/macos-spotify.nvim'
 ```
 
 Then add to your `init.lua`:
@@ -109,6 +120,22 @@ require('macos-spotify').setup({
 | `:SpotifyVolume [level]` | Get/set volume (0-100) |
 | `:SpotifySeek {seconds}` | Jump to position in seconds |
 | `:SpotifyToggle` | Play/pause with track info |
+
+### Telescope Commands
+
+**Requires [Telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)**
+
+| Command | Description | Keybindings |
+|---------|-------------|-------------|
+| `:SpotifyPlaylists` | Browse and play playlists | `<C-t>` or `t` in insert/normal mode to view tracks |
+| `:SpotifySearch` | Search for tracks across all playlists | Type to search dynamically |
+| `:SpotifyTracks` | Browse all tracks from all playlists | Fuzzy search through all songs |
+
+**Telescope Picker Features:**
+- **Preview**: See track details (name, artist, album, URI) in preview window
+- **Play on Select**: Press `<CR>` to play the selected track or playlist
+- **Navigation**: Use standard Telescope navigation (`<C-n>`, `<C-p>`, etc.)
+- **Playlist Tracks**: From playlists picker, press `<C-t>` to view tracks in that playlist
 
 ### Command Examples
 
@@ -166,6 +193,29 @@ end, { desc = 'Spotify: Previous Track' })
 vim.keymap.set('n', '<leader>ss', function()
   require('macos-spotify').show_current_track()
 end, { desc = 'Spotify: Show Track' })
+```
+
+### Telescope Integration Keybindings
+
+```lua
+-- Telescope integration (requires telescope.nvim)
+vim.keymap.set('n', '<leader>sP', ':SpotifyPlaylists<CR>', 
+  { desc = 'Spotify: Browse Playlists' })
+
+vim.keymap.set('n', '<leader>sf', ':SpotifySearch<CR>', 
+  { desc = 'Spotify: Search Tracks' })
+
+vim.keymap.set('n', '<leader>sT', ':SpotifyTracks<CR>', 
+  { desc = 'Spotify: Browse All Tracks' })
+
+-- Or using Lua functions directly
+vim.keymap.set('n', '<leader>sP', function()
+  require('macos-spotify').telescope_playlists()
+end, { desc = 'Spotify: Browse Playlists' })
+
+vim.keymap.set('n', '<leader>sf', function()
+  require('macos-spotify').telescope_search()
+end, { desc = 'Spotify: Search Tracks' })
 ```
 
 ## 🔧 Lua API
@@ -262,6 +312,52 @@ require('macos-spotify').set_position(30)
 local duration = require('macos-spotify').get_duration()
 ```
 
+### Telescope Integration
+
+**Requires Telescope.nvim**
+
+```lua
+-- Browse playlists with Telescope
+require('macos-spotify').telescope_playlists()
+
+-- Search for tracks across all playlists
+require('macos-spotify').telescope_search()
+
+-- Browse all tracks from all playlists
+require('macos-spotify').telescope_tracks()
+
+-- Get playlists programmatically
+local playlists = require('macos-spotify').get_playlists()
+if playlists then
+  for _, playlist in ipairs(playlists) do
+    print(playlist.name)      -- Playlist name
+    print(playlist.uri)       -- Spotify URI
+    print(playlist.track_count) -- Number of tracks
+  end
+end
+
+-- Get tracks from a specific playlist
+local tracks = require('macos-spotify').get_playlist_tracks(playlist_uri)
+if tracks then
+  for _, track in ipairs(tracks) do
+    print(track.name)    -- Track name
+    print(track.artist)  -- Artist name
+    print(track.album)   -- Album name
+    print(track.uri)     -- Spotify URI
+    print(track.display) -- Formatted "Track - Artist"
+  end
+end
+
+-- Play a specific track by URI
+require('macos-spotify').play_track('spotify:track:...')
+
+-- Play a specific playlist by URI
+require('macos-spotify').play_playlist('spotify:playlist:...')
+
+-- Search for tracks
+local results = require('macos-spotify').search_tracks('song name')
+```
+
 ## 📚 Help Documentation
 
 The plugin includes comprehensive Vim help documentation. Access it with:
@@ -309,19 +405,37 @@ require('macos-spotify').setup({
 2. Check for Lua errors with `:messages`
 3. Try running `:SpotifyShowTrack` directly
 
+### Telescope commands not working
+
+1. Make sure Telescope.nvim is installed: `:Telescope` should work
+2. Check if the plugin can load telescope: `:lua print(pcall(require, 'telescope'))`
+3. Verify Spotify is running before using Telescope commands
+
+### Playlist loading is slow
+
+Loading all tracks from multiple playlists can take time depending on:
+- Number of playlists in your library
+- Number of tracks per playlist
+- Spotify's response time
+
+Use `:SpotifySearch` for faster dynamic searching, or `:SpotifyPlaylists` to browse one playlist at a time.
+
 ## 🚀 Future Enhancement Ideas
 
 Potential features for future versions:
 
+- ✅ ~~Playlist browsing~~ (Implemented with Telescope)
+- ✅ ~~Search functionality~~ (Implemented with Telescope)
 - Support for Apple Music and other players
-- Playlist management and creation
-- Search functionality
+- Playlist management and creation (add/remove tracks)
 - Track progress bar in statusline
 - Like/unlike current track
 - Shuffle and repeat controls
 - Integration with statusline plugins (lualine, etc.)
 - Lyrics display
 - Queue management
+- Album browsing
+- Artist browsing
 
 Contributions are welcome! Feel free to open issues or submit pull requests.
 

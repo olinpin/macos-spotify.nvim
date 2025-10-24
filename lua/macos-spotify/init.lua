@@ -219,6 +219,34 @@ function M.volume(level)
   end
 end
 
+-- Telescope integration functions
+function M.telescope_playlists(opts)
+  local has_telescope, telescope_integration = pcall(require, 'macos-spotify.telescope')
+  if not has_telescope then
+    utils.notify("Telescope.nvim is required for this feature", "error")
+    return
+  end
+  telescope_integration.playlists(opts)
+end
+
+function M.telescope_search(opts)
+  local has_telescope, telescope_integration = pcall(require, 'macos-spotify.telescope')
+  if not has_telescope then
+    utils.notify("Telescope.nvim is required for this feature", "error")
+    return
+  end
+  telescope_integration.search_tracks(opts)
+end
+
+function M.telescope_tracks(opts)
+  local has_telescope, telescope_integration = pcall(require, 'macos-spotify.telescope')
+  if not has_telescope then
+    utils.notify("Telescope.nvim is required for this feature", "error")
+    return
+  end
+  telescope_integration.all_tracks(opts)
+end
+
 -- Export all spotify functions
 M.play_pause = spotify.play_pause
 M.next_track = spotify.next_track
@@ -231,5 +259,10 @@ M.set_position = spotify.set_position
 M.get_position = spotify.get_position
 M.get_duration = spotify.get_duration
 M.get_status = spotify.get_status
+M.get_playlists = spotify.get_playlists
+M.get_playlist_tracks = spotify.get_playlist_tracks
+M.play_track = spotify.play_track
+M.play_playlist = spotify.play_playlist
+M.search_tracks = spotify.search_tracks
 
 return M

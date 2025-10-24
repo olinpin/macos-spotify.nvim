@@ -53,6 +53,16 @@ command! -nargs=1 SpotifySeek lua require('macos-spotify').set_position(<args>)
 " Toggle play/pause with track info
 command! SpotifyToggle lua require('macos-spotify').toggle_with_info()
 
+" Telescope integration commands
+" Browse playlists
+command! SpotifyPlaylists lua require('macos-spotify').telescope_playlists()
+
+" Search for tracks
+command! SpotifySearch lua require('macos-spotify').telescope_search()
+
+" Browse all tracks
+command! SpotifyTracks lua require('macos-spotify').telescope_tracks()
+
 " Auto-setup with default config if not already configured
 " Users can override this with their own setup() call in their config
 if !exists('g:macos_spotify_configured')

@@ -115,6 +115,29 @@ COMMANDS                                                  *macos-spotify-command
 :SpotifyToggle          Same as SpotifyPlayPause but explicitly designed to
                         show track info after toggling.
 
+                                                        *:SpotifyPlaylists*
+:SpotifyPlaylists       Open Telescope picker to browse and play playlists.
+                        Requires telescope.nvim to be installed.
+                        
+                        Keybindings in picker:
+                        • <CR> - Play selected playlist
+                        • <C-t> or t - View tracks in selected playlist
+
+                                                           *:SpotifySearch*
+:SpotifySearch          Open Telescope picker to search for tracks across
+                        all playlists. Type to search dynamically.
+                        Requires telescope.nvim to be installed.
+                        
+                        Keybindings in picker:
+                        • <CR> - Play selected track
+
+                                                           *:SpotifyTracks*
+:SpotifyTracks          Open Telescope picker to browse all tracks from
+                        all playlists. Requires telescope.nvim to be installed.
+                        
+                        Keybindings in picker:
+                        • <CR> - Play selected track
+
 ==============================================================================
 CONFIGURATION                                        *macos-spotify-configuration*
 
@@ -226,6 +249,62 @@ require('macos-spotify').get_status()                    *macos-spotify.get_stat
     Get comprehensive status information.
     Returns: table|nil with complete status data
 
+                                                  *macos-spotify-telescope-api*
+Telescope Integration API~
+
+require('macos-spotify').telescope_playlists({opts})
+                                            *macos-spotify.telescope_playlists()*
+    Open Telescope picker to browse playlists.
+    Parameters:
+      {opts} (table|nil) - Telescope picker options
+    Requires: telescope.nvim
+
+require('macos-spotify').telescope_search({opts})
+                                              *macos-spotify.telescope_search()*
+    Open Telescope picker to search for tracks.
+    Parameters:
+      {opts} (table|nil) - Telescope picker options
+    Requires: telescope.nvim
+
+require('macos-spotify').telescope_tracks({opts})
+                                              *macos-spotify.telescope_tracks()*
+    Open Telescope picker to browse all tracks.
+    Parameters:
+      {opts} (table|nil) - Telescope picker options
+    Requires: telescope.nvim
+
+require('macos-spotify').get_playlists()          *macos-spotify.get_playlists()*
+    Get all user playlists.
+    Returns: table|nil with array of playlists, each containing:
+      {name} (string) - Playlist name
+      {uri} (string) - Spotify URI
+      {track_count} (number) - Number of tracks
+
+require('macos-spotify').get_playlist_tracks(uri)
+                                         *macos-spotify.get_playlist_tracks()*
+    Get tracks from a specific playlist.
+    Parameters:
+      {uri} (string) - Playlist URI
+    Returns: table|nil with array of tracks
+
+require('macos-spotify').play_track(uri)              *macos-spotify.play_track()*
+    Play a specific track by URI.
+    Parameters:
+      {uri} (string) - Track URI
+    Returns: boolean (success status)
+
+require('macos-spotify').play_playlist(uri)        *macos-spotify.play_playlist()*
+    Play a specific playlist by URI.
+    Parameters:
+      {uri} (string) - Playlist URI
+    Returns: boolean (success status)
+
+require('macos-spotify').search_tracks(query)      *macos-spotify.search_tracks()*
+    Search for tracks across all playlists.
+    Parameters:
+      {query} (string) - Search query
+    Returns: table|nil with array of matching tracks
+
 ==============================================================================
 KEYBINDINGS                                            *macos-spotify-keybindings*
 
@@ -261,6 +340,23 @@ Alternative keybindings using Lua functions directly:
     vim.keymap.set('n', '<leader>sn', function()
       require('macos-spotify').next_track()
     end, { desc = 'Spotify: Next Track' })
+<
+
+Telescope integration keybindings (requires telescope.nvim):
+>lua
+    vim.keymap.set('n', '<leader>sP', ':SpotifyPlaylists<CR>',
+      { desc = 'Spotify: Browse Playlists' })
+    
+    vim.keymap.set('n', '<leader>sf', ':SpotifySearch<CR>',
+      { desc = 'Spotify: Search Tracks' })
+    
+    vim.keymap.set('n', '<leader>sT', ':SpotifyTracks<CR>',
+      { desc = 'Spotify: Browse All Tracks' })
+    
+    -- Or using Lua functions
+    vim.keymap.set('n', '<leader>sP', function()
+      require('macos-spotify').telescope_playlists()
+    end, { desc = 'Spotify: Browse Playlists' })
 <
 
 ==============================================================================
