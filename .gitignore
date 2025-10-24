@@ -1,0 +1,18 @@
+# Log files
+install.log
+
+# macOS
+.DS_Store
+
+# Vim swap files
+*.swp
+*.swo
+*.swn
+*~
+
+# Neovim
+*.tmp
+
+# Editor directories
+.idea/
+.vscode/

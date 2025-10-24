@@ -1,0 +1,324 @@
+*spicetify.txt*  Neovim Spotify controller for macOS
+
+==============================================================================
+CONTENTS                                                  *spicetify-contents*
+
+    1. Introduction .......................... |spicetify-introduction|
+    2. Requirements .......................... |spicetify-requirements|
+    3. Installation .......................... |spicetify-installation|
+    4. Commands .............................. |spicetify-commands|
+    5. Configuration ......................... |spicetify-configuration|
+    6. Lua API ............................... |spicetify-api|
+    7. Keybindings ........................... |spicetify-keybindings|
+    8. Troubleshooting ....................... |spicetify-troubleshooting|
+    9. License ............................... |spicetify-license|
+
+==============================================================================
+INTRODUCTION                                          *spicetify-introduction*
+
+spicetify.nvim is a Neovim plugin that allows you to control Spotify directly
+from Neovim on macOS. It uses AppleScript through `osascript` to communicate
+with the Spotify application.
+
+Features:
+  • Play/pause control
+  • Track navigation (next/previous)
+  • Volume control
+  • Display current track information
+  • Playback position control
+  • Beautiful floating window displays
+  • Customizable notifications
+
+==============================================================================
+REQUIREMENTS                                          *spicetify-requirements*
+
+  • macOS (required - uses AppleScript)
+  • Neovim 0.7 or later
+  • Spotify application installed
+  • Spotify must be running to use the plugin
+
+==============================================================================
+INSTALLATION                                          *spicetify-installation*
+
+Using lazy.nvim: >lua
+    {
+      'yourusername/spicetify-nvim',
+      config = function()
+        require('spicetify').setup({
+          notifications = true,
+          notification_style = 'detailed',
+          show_track_info = true,
+        })
+      end
+    }
+<
+
+Using packer.nvim: >lua
+    use {
+      'yourusername/spicetify-nvim',
+      config = function()
+        require('spicetify').setup()
+      end
+    }
+<
+
+Using vim-plug: >vim
+    Plug 'yourusername/spicetify-nvim'
+<
+Then in your init.lua: >lua
+    require('spicetify').setup()
+<
+
+==============================================================================
+COMMANDS                                                  *spicetify-commands*
+
+                                                         *:SpotifyPlayPause*
+:SpotifyPlayPause       Toggle play/pause state. If configured, shows a
+                        notification with current track and state.
+
+                                                              *:SpotifyNext*
+:SpotifyNext            Skip to the next track. If configured, shows the
+                        new track information.
+
+                                                          *:SpotifyPrevious*
+:SpotifyPrevious        Go to the previous track. If configured, shows the
+                        new track information.
+
+                                                        *:SpotifyShowTrack*
+:SpotifyShowTrack       Display current track information in a beautiful
+                        floating window. Shows track name, artist, album,
+                        and playback position.
+
+                                                            *:SpotifyStatus*
+:SpotifyStatus          Show comprehensive player status including track
+                        info, state, volume, and position.
+
+                                                            *:SpotifyVolume*
+:SpotifyVolume [level]  Get or set volume level.
+                        Without argument: shows current volume
+                        With argument (0-100): sets volume to that level
+                        
+                        Examples: >
+                        :SpotifyVolume      " Show current volume
+                        :SpotifyVolume 50   " Set volume to 50%
+                        :SpotifyVolume 100  " Set volume to 100%
+<
+
+                                                              *:SpotifySeek*
+:SpotifySeek {seconds}  Set playback position to specified number of seconds.
+                        
+                        Example: >
+                        :SpotifySeek 30   " Jump to 30 seconds
+<
+
+                                                            *:SpotifyToggle*
+:SpotifyToggle          Same as SpotifyPlayPause but explicitly designed to
+                        show track info after toggling.
+
+==============================================================================
+CONFIGURATION                                        *spicetify-configuration*
+
+Configure the plugin by calling the setup function with your preferences:
+
+>lua
+    require('spicetify').setup({
+      -- Show notifications for actions (default: true)
+      notifications = true,
+      
+      -- Notification style: 'minimal' or 'detailed' (default: 'detailed')
+      notification_style = 'detailed',
+      
+      -- Show track info after play/pause/next/previous (default: true)
+      show_track_info = true,
+    })
+<
+
+Configuration Options:~
+
+  `notifications` (boolean)
+    Enable or disable all notifications.
+    Default: true
+
+  `notification_style` (string)
+    Style of notifications. Options: 'minimal' or 'detailed'
+    • 'minimal': Simple text notifications
+    • 'detailed': Rich notifications with icons and formatting
+    Default: 'detailed'
+
+  `show_track_info` (boolean)
+    Automatically show track information after actions like play/pause,
+    next, or previous.
+    Default: true
+
+==============================================================================
+LUA API                                                      *spicetify-api*
+
+All commands are available as Lua functions for use in keybindings or custom
+functions.
+
+require('spicetify').setup({opts})                       *spicetify.setup()*
+    Initialize the plugin with configuration options.
+    See |spicetify-configuration| for available options.
+
+require('spicetify').play_pause()                    *spicetify.play_pause()*
+    Toggle play/pause state.
+    Returns: boolean (success status)
+
+require('spicetify').next_track()                    *spicetify.next_track()*
+    Skip to next track.
+    Returns: boolean (success status)
+
+require('spicetify').previous_track()            *spicetify.previous_track()*
+    Go to previous track.
+    Returns: boolean (success status)
+
+require('spicetify').show_current_track()    *spicetify.show_current_track()*
+    Display current track information in a floating window.
+
+require('spicetify').show_status()                  *spicetify.show_status()*
+    Show comprehensive player status.
+
+require('spicetify').volume(level)                      *spicetify.volume()*
+    Get or set volume.
+    Parameters:
+      {level} (number|nil) - Volume level 0-100, nil to show current
+
+require('spicetify').set_volume(level)              *spicetify.set_volume()*
+    Set volume to specific level.
+    Parameters:
+      {level} (number) - Volume level 0-100
+    Returns: boolean (success status)
+
+require('spicetify').get_volume()                    *spicetify.get_volume()*
+    Get current volume level.
+    Returns: number|nil (volume level or nil if failed)
+
+require('spicetify').set_position(seconds)        *spicetify.set_position()*
+    Set playback position.
+    Parameters:
+      {seconds} (number) - Position in seconds
+    Returns: boolean (success status)
+
+require('spicetify').get_position()                *spicetify.get_position()*
+    Get current playback position.
+    Returns: number|nil (position in seconds or nil)
+
+require('spicetify').get_current_track()        *spicetify.get_current_track()*
+    Get current track information.
+    Returns: table|nil with fields:
+      {name} (string) - Track name
+      {artist} (string) - Artist name
+      {album} (string) - Album name
+      {display} (string) - Formatted "Track - Artist"
+
+require('spicetify').get_player_state()          *spicetify.get_player_state()*
+    Get player state.
+    Returns: table|nil with fields:
+      {state} (string) - "playing" or "paused"
+      {playing} (boolean) - true if playing
+      {paused} (boolean) - true if paused
+
+require('spicetify').get_duration()                *spicetify.get_duration()*
+    Get track duration.
+    Returns: number|nil (duration in milliseconds)
+
+require('spicetify').get_status()                    *spicetify.get_status()*
+    Get comprehensive status information.
+    Returns: table|nil with complete status data
+
+==============================================================================
+KEYBINDINGS                                            *spicetify-keybindings*
+
+The plugin does not set any default keybindings to avoid conflicts. Here are
+some suggested keybindings you can add to your configuration:
+
+>lua
+    -- Using vim.keymap.set (Neovim 0.7+)
+    local opts = { noremap = true, silent = true }
+    
+    vim.keymap.set('n', '<leader>sp', ':SpotifyPlayPause<CR>', 
+      { desc = 'Spotify: Play/Pause', unpack(opts) })
+    
+    vim.keymap.set('n', '<leader>sn', ':SpotifyNext<CR>', 
+      { desc = 'Spotify: Next Track', unpack(opts) })
+    
+    vim.keymap.set('n', '<leader>sb', ':SpotifyPrevious<CR>', 
+      { desc = 'Spotify: Previous Track', unpack(opts) })
+    
+    vim.keymap.set('n', '<leader>ss', ':SpotifyShowTrack<CR>', 
+      { desc = 'Spotify: Show Track', unpack(opts) })
+    
+    vim.keymap.set('n', '<leader>st', ':SpotifyStatus<CR>', 
+      { desc = 'Spotify: Show Status', unpack(opts) })
+<
+
+Alternative keybindings using Lua functions directly:
+>lua
+    vim.keymap.set('n', '<leader>sp', function()
+      require('spicetify').play_pause()
+    end, { desc = 'Spotify: Play/Pause' })
+    
+    vim.keymap.set('n', '<leader>sn', function()
+      require('spicetify').next_track()
+    end, { desc = 'Spotify: Next Track' })
+<
+
+==============================================================================
+TROUBLESHOOTING                                    *spicetify-troubleshooting*
+
+Problem: "This plugin only works on macOS" ~
+Solution: This plugin uses AppleScript which is macOS-only. It will not work
+          on Linux or Windows.
+
+Problem: "Spotify is not running" ~
+Solution: Make sure the Spotify application is running. The plugin cannot
+          control Spotify if it's not open.
+
+Problem: Commands don't work or timeout ~
+Solution: 
+  1. Verify Spotify is running and responsive
+  2. Try controlling Spotify manually to ensure it's not frozen
+  3. Check Console.app for any AppleScript errors
+  4. Ensure you have the latest version of Spotify
+
+Problem: No notifications appearing ~
+Solution: Check your configuration:
+>lua
+    require('spicetify').setup({
+      notifications = true,  -- Make sure this is true
+    })
+<
+
+Problem: Floating window not showing ~
+Solution: 
+  1. Try running `:SpotifyShowTrack` directly
+  2. Check if there are any Lua errors with `:messages`
+  3. Ensure Neovim 0.7+ is installed
+
+==============================================================================
+LICENSE                                                    *spicetify-license*
+
+MIT License
+
+Copyright (c) 2025 Oliver Hnat
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
