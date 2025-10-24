@@ -62,7 +62,7 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
 
 ```lua
 use {
-  'yourusername/macos-spotify.nvim',
+  'olinpin/macos-spotify.nvim',
   config = function()
     require('macos-spotify').setup()
   end
@@ -72,7 +72,7 @@ use {
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'yourusername/macos-spotify.nvim'
+Plug 'olinpin/macos-spotify.nvim'
 ```
 
 Then add to your `init.lua`:

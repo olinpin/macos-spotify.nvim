@@ -358,12 +358,16 @@ function M.get_playlists()
   
   local script = [[
     tell application "Spotify"
-      set playlistData to {}
+      set playlistData to ""
+      set playlistCount to 0
       repeat with aPlaylist in user playlists
-        set playlistInfo to (name of aPlaylist) & "|" & (id of aPlaylist) & "|" & (count of tracks of aPlaylist)
-        set end of playlistData to playlistInfo
+        if playlistCount > 0 then
+          set playlistData to playlistData & linefeed
+        end if
+        set playlistData to playlistData & (name of aPlaylist) & "|" & (id of aPlaylist) & "|" & (count of tracks of aPlaylist)
+        set playlistCount to playlistCount + 1
       end repeat
-      return playlistData as text
+      return playlistData
     end tell
   ]]
   
@@ -409,14 +413,18 @@ function M.get_playlist_tracks(playlist_uri)
       end repeat
       
       if targetPlaylist is not null then
-        set trackData to {}
+        set trackData to ""
+        set trackCount to 0
         repeat with aTrack in tracks of targetPlaylist
           try
-            set trackInfo to (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
-            set end of trackData to trackInfo
+            if trackCount > 0 then
+              set trackData to trackData & linefeed
+            end if
+            set trackData to trackData & (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
+            set trackCount to trackCount + 1
           end try
         end repeat
-        return trackData as text
+        return trackData
       else
         return ""
       end if
@@ -548,17 +556,21 @@ function M.get_saved_tracks(limit)
       end repeat
       
       if likedPlaylist is not null then
-        set trackData to {}
+        set trackData to ""
         set trackCount to 0
+        set firstTrack to true
         repeat with aTrack in tracks of likedPlaylist
           if trackCount >= %d then exit repeat
           try
-            set trackInfo to (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
-            set end of trackData to trackInfo
+            if not firstTrack then
+              set trackData to trackData & linefeed
+            end if
+            set trackData to trackData & (name of aTrack) & "|" & (artist of aTrack) & "|" & (album of aTrack) & "|" & (id of aTrack)
             set trackCount to trackCount + 1
+            set firstTrack to false
           end try
         end repeat
-        return trackData as text
+        return trackData
       else
         return ""
       end if
