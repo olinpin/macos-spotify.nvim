@@ -1,4 +1,4 @@
-# 🎵 spicetify.nvim
+# 🎵 macos-spotify.nvim
 
 A Neovim plugin for controlling Spotify on macOS directly from your editor. Control playback, view track information, and manage your Spotify experience without leaving Neovim.
 
@@ -29,9 +29,9 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
 
 ```lua
 {
-  'yourusername/spicetify-nvim',
+  'olinpin/macos-spotify-nvim',
   config = function()
-    require('spicetify').setup({
+    require('macos-spotify').setup({
       notifications = true,
       notification_style = 'detailed',
       show_track_info = true,
@@ -51,9 +51,9 @@ A Neovim plugin for controlling Spotify on macOS directly from your editor. Cont
 
 ```lua
 use {
-  'yourusername/spicetify-nvim',
+  'yourusername/macos-spotify-nvim',
   config = function()
-    require('spicetify').setup()
+    require('macos-spotify').setup()
   end
 }
 ```
@@ -61,13 +61,13 @@ use {
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'yourusername/spicetify-nvim'
+Plug 'yourusername/macos-spotify-nvim'
 ```
 
 Then add to your `init.lua`:
 
 ```lua
-require('spicetify').setup()
+require('macos-spotify').setup()
 ```
 
 ## ⚙️ Configuration
@@ -75,7 +75,7 @@ require('spicetify').setup()
 The plugin works out of the box with sensible defaults, but you can customize it:
 
 ```lua
-require('spicetify').setup({
+require('macos-spotify').setup({
   -- Enable/disable notifications (default: true)
   notifications = true,
   
@@ -152,19 +152,19 @@ vim.keymap.set('n', '<leader>st', ':SpotifyStatus<CR>',
 
 ```lua
 vim.keymap.set('n', '<leader>sp', function()
-  require('spicetify').play_pause()
+  require('macos-spotify').play_pause()
 end, { desc = 'Spotify: Play/Pause' })
 
 vim.keymap.set('n', '<leader>sn', function()
-  require('spicetify').next_track()
+  require('macos-spotify').next_track()
 end, { desc = 'Spotify: Next Track' })
 
 vim.keymap.set('n', '<leader>sb', function()
-  require('spicetify').previous_track()
+  require('macos-spotify').previous_track()
 end, { desc = 'Spotify: Previous Track' })
 
 vim.keymap.set('n', '<leader>ss', function()
-  require('spicetify').show_current_track()
+  require('macos-spotify').show_current_track()
 end, { desc = 'Spotify: Show Track' })
 ```
 
@@ -175,7 +175,7 @@ All functionality is available through the Lua API:
 ### Setup
 
 ```lua
-require('spicetify').setup(opts)
+require('macos-spotify').setup(opts)
 ```
 
 Initialize the plugin with configuration options.
@@ -184,44 +184,44 @@ Initialize the plugin with configuration options.
 
 ```lua
 -- Toggle play/pause
-require('spicetify').play_pause()
+require('macos-spotify').play_pause()
 
 -- Next track
-require('spicetify').next_track()
+require('macos-spotify').next_track()
 
 -- Previous track  
-require('spicetify').previous_track()
+require('macos-spotify').previous_track()
 ```
 
 ### Information Display
 
 ```lua
 -- Show current track in floating window
-require('spicetify').show_current_track()
+require('macos-spotify').show_current_track()
 
 -- Show comprehensive status
-require('spicetify').show_status()
+require('macos-spotify').show_status()
 ```
 
 ### Volume Control
 
 ```lua
 -- Get current volume
-local volume = require('spicetify').get_volume()
+local volume = require('macos-spotify').get_volume()
 
 -- Set volume to 75%
-require('spicetify').set_volume(75)
+require('macos-spotify').set_volume(75)
 
 -- Get or set volume (command style)
-require('spicetify').volume(50)  -- Set to 50%
-require('spicetify').volume()     -- Show current
+require('macos-spotify').volume(50)  -- Set to 50%
+require('macos-spotify').volume()     -- Show current
 ```
 
 ### Track Information
 
 ```lua
 -- Get current track info
-local track = require('spicetify').get_current_track()
+local track = require('macos-spotify').get_current_track()
 if track then
   print(track.name)     -- Track name
   print(track.artist)   -- Artist name
@@ -230,7 +230,7 @@ if track then
 end
 
 -- Get player state
-local state = require('spicetify').get_player_state()
+local state = require('macos-spotify').get_player_state()
 if state then
   print(state.state)    -- "playing" or "paused"
   print(state.playing)  -- boolean
@@ -238,7 +238,7 @@ if state then
 end
 
 -- Get comprehensive status
-local status = require('spicetify').get_status()
+local status = require('macos-spotify').get_status()
 if status then
   print(status.track.name)
   print(status.state.state)
@@ -253,13 +253,13 @@ end
 
 ```lua
 -- Get current position (in seconds)
-local position = require('spicetify').get_position()
+local position = require('macos-spotify').get_position()
 
 -- Set position to 30 seconds
-require('spicetify').set_position(30)
+require('macos-spotify').set_position(30)
 
 -- Get track duration (in milliseconds)
-local duration = require('spicetify').get_duration()
+local duration = require('macos-spotify').get_duration()
 ```
 
 ## 📚 Help Documentation
@@ -267,14 +267,14 @@ local duration = require('spicetify').get_duration()
 The plugin includes comprehensive Vim help documentation. Access it with:
 
 ```vim
-:help spicetify
+:help macos-spotify
 ```
 
 Browse help topics:
-- `:help spicetify-commands` - Command reference
-- `:help spicetify-api` - Lua API documentation
-- `:help spicetify-configuration` - Configuration options
-- `:help spicetify-troubleshooting` - Common issues
+- `:help macos-spotify-commands` - Command reference
+- `:help macos-spotify-api` - Lua API documentation
+- `:help macos-spotify-configuration` - Configuration options
+- `:help macos-spotify-troubleshooting` - Common issues
 
 ## 🐛 Troubleshooting
 
@@ -298,7 +298,7 @@ Make sure the Spotify application is open and running. The plugin cannot control
 Check your configuration to ensure notifications are enabled:
 
 ```lua
-require('spicetify').setup({
+require('macos-spotify').setup({
   notifications = true,
 })
 ```
@@ -377,7 +377,7 @@ Copyright (c) 2025 Oliver Hnat
 If you encounter issues or have questions:
 
 1. Check the [Troubleshooting](#-troubleshooting) section
-2. Read the help documentation: `:help spicetify`
+2. Read the help documentation: `:help macos-spotify`
 3. Open an issue on GitHub
 
 ---

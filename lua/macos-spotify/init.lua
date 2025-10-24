@@ -1,10 +1,10 @@
--- lua/spicetify/init.lua
--- Main module for spicetify.nvim
+-- lua/macos-spotify/init.lua
+-- Main module for macos-spotify.nvim
 -- Author: Oliver Hnat
 -- License: MIT
 
-local spotify = require("spicetify.spotify")
-local utils = require("spicetify.utils")
+local spotify = require("macos-spotify.spotify")
+local utils = require("macos-spotify.utils")
 
 local M = {}
 
@@ -28,7 +28,7 @@ function M.setup(opts)
   
   -- Check if running on macOS
   if not utils.is_macos() then
-    utils.notify("spicetify.nvim only works on macOS", "warn")
+    utils.notify("macos-spotify.nvim only works on macOS", "warn")
   end
 end
 

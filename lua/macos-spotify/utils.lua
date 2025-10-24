@@ -1,5 +1,5 @@
--- lua/spicetify/utils.lua
--- Utility functions for spicetify.nvim
+-- lua/macos-spotify/utils.lua
+-- Utility functions for macos-spotify.nvim
 -- Author: Oliver Hnat
 -- License: MIT
 

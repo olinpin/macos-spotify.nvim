@@ -1,22 +1,22 @@
-*spicetify.txt*  Neovim Spotify controller for macOS
+*macos-spotify.txt*  Neovim Spotify controller for macOS
 
 ==============================================================================
-CONTENTS                                                  *spicetify-contents*
+CONTENTS                                                  *macos-spotify-contents*
 
-    1. Introduction .......................... |spicetify-introduction|
-    2. Requirements .......................... |spicetify-requirements|
-    3. Installation .......................... |spicetify-installation|
-    4. Commands .............................. |spicetify-commands|
-    5. Configuration ......................... |spicetify-configuration|
-    6. Lua API ............................... |spicetify-api|
-    7. Keybindings ........................... |spicetify-keybindings|
-    8. Troubleshooting ....................... |spicetify-troubleshooting|
-    9. License ............................... |spicetify-license|
+    1. Introduction .......................... |macos-spotify-introduction|
+    2. Requirements .......................... |macos-spotify-requirements|
+    3. Installation .......................... |macos-spotify-installation|
+    4. Commands .............................. |macos-spotify-commands|
+    5. Configuration ......................... |macos-spotify-configuration|
+    6. Lua API ............................... |macos-spotify-api|
+    7. Keybindings ........................... |macos-spotify-keybindings|
+    8. Troubleshooting ....................... |macos-spotify-troubleshooting|
+    9. License ............................... |macos-spotify-license|
 
 ==============================================================================
-INTRODUCTION                                          *spicetify-introduction*
+INTRODUCTION                                          *macos-spotify-introduction*
 
-spicetify.nvim is a Neovim plugin that allows you to control Spotify directly
+macos-spotify.nvim is a Neovim plugin that allows you to control Spotify directly
 from Neovim on macOS. It uses AppleScript through `osascript` to communicate
 with the Spotify application.
 
@@ -30,7 +30,7 @@ Features:
   • Customizable notifications
 
 ==============================================================================
-REQUIREMENTS                                          *spicetify-requirements*
+REQUIREMENTS                                          *macos-spotify-requirements*
 
   • macOS (required - uses AppleScript)
   • Neovim 0.7 or later
@@ -38,13 +38,13 @@ REQUIREMENTS                                          *spicetify-requirements*
   • Spotify must be running to use the plugin
 
 ==============================================================================
-INSTALLATION                                          *spicetify-installation*
+INSTALLATION                                          *macos-spotify-installation*
 
 Using lazy.nvim: >lua
     {
-      'yourusername/spicetify-nvim',
+      'yourusername/macos-spotify-nvim',
       config = function()
-        require('spicetify').setup({
+        require('macos-spotify').setup({
           notifications = true,
           notification_style = 'detailed',
           show_track_info = true,
@@ -55,22 +55,22 @@ Using lazy.nvim: >lua
 
 Using packer.nvim: >lua
     use {
-      'yourusername/spicetify-nvim',
+      'yourusername/macos-spotify-nvim',
       config = function()
-        require('spicetify').setup()
+        require('macos-spotify').setup()
       end
     }
 <
 
 Using vim-plug: >vim
-    Plug 'yourusername/spicetify-nvim'
+    Plug 'yourusername/macos-spotify-nvim'
 <
 Then in your init.lua: >lua
-    require('spicetify').setup()
+    require('macos-spotify').setup()
 <
 
 ==============================================================================
-COMMANDS                                                  *spicetify-commands*
+COMMANDS                                                  *macos-spotify-commands*
 
                                                          *:SpotifyPlayPause*
 :SpotifyPlayPause       Toggle play/pause state. If configured, shows a
@@ -116,12 +116,12 @@ COMMANDS                                                  *spicetify-commands*
                         show track info after toggling.
 
 ==============================================================================
-CONFIGURATION                                        *spicetify-configuration*
+CONFIGURATION                                        *macos-spotify-configuration*
 
 Configure the plugin by calling the setup function with your preferences:
 
 >lua
-    require('spicetify').setup({
+    require('macos-spotify').setup({
       -- Show notifications for actions (default: true)
       notifications = true,
       
@@ -151,59 +151,59 @@ Configuration Options:~
     Default: true
 
 ==============================================================================
-LUA API                                                      *spicetify-api*
+LUA API                                                      *macos-spotify-api*
 
 All commands are available as Lua functions for use in keybindings or custom
 functions.
 
-require('spicetify').setup({opts})                       *spicetify.setup()*
+require('macos-spotify').setup({opts})                       *macos-spotify.setup()*
     Initialize the plugin with configuration options.
-    See |spicetify-configuration| for available options.
+    See |macos-spotify-configuration| for available options.
 
-require('spicetify').play_pause()                    *spicetify.play_pause()*
+require('macos-spotify').play_pause()                    *macos-spotify.play_pause()*
     Toggle play/pause state.
     Returns: boolean (success status)
 
-require('spicetify').next_track()                    *spicetify.next_track()*
+require('macos-spotify').next_track()                    *macos-spotify.next_track()*
     Skip to next track.
     Returns: boolean (success status)
 
-require('spicetify').previous_track()            *spicetify.previous_track()*
+require('macos-spotify').previous_track()            *macos-spotify.previous_track()*
     Go to previous track.
     Returns: boolean (success status)
 
-require('spicetify').show_current_track()    *spicetify.show_current_track()*
+require('macos-spotify').show_current_track()    *macos-spotify.show_current_track()*
     Display current track information in a floating window.
 
-require('spicetify').show_status()                  *spicetify.show_status()*
+require('macos-spotify').show_status()                  *macos-spotify.show_status()*
     Show comprehensive player status.
 
-require('spicetify').volume(level)                      *spicetify.volume()*
+require('macos-spotify').volume(level)                      *macos-spotify.volume()*
     Get or set volume.
     Parameters:
       {level} (number|nil) - Volume level 0-100, nil to show current
 
-require('spicetify').set_volume(level)              *spicetify.set_volume()*
+require('macos-spotify').set_volume(level)              *macos-spotify.set_volume()*
     Set volume to specific level.
     Parameters:
       {level} (number) - Volume level 0-100
     Returns: boolean (success status)
 
-require('spicetify').get_volume()                    *spicetify.get_volume()*
+require('macos-spotify').get_volume()                    *macos-spotify.get_volume()*
     Get current volume level.
     Returns: number|nil (volume level or nil if failed)
 
-require('spicetify').set_position(seconds)        *spicetify.set_position()*
+require('macos-spotify').set_position(seconds)        *macos-spotify.set_position()*
     Set playback position.
     Parameters:
       {seconds} (number) - Position in seconds
     Returns: boolean (success status)
 
-require('spicetify').get_position()                *spicetify.get_position()*
+require('macos-spotify').get_position()                *macos-spotify.get_position()*
     Get current playback position.
     Returns: number|nil (position in seconds or nil)
 
-require('spicetify').get_current_track()        *spicetify.get_current_track()*
+require('macos-spotify').get_current_track()        *macos-spotify.get_current_track()*
     Get current track information.
     Returns: table|nil with fields:
       {name} (string) - Track name
@@ -211,23 +211,23 @@ require('spicetify').get_current_track()        *spicetify.get_current_track()*
       {album} (string) - Album name
       {display} (string) - Formatted "Track - Artist"
 
-require('spicetify').get_player_state()          *spicetify.get_player_state()*
+require('macos-spotify').get_player_state()          *macos-spotify.get_player_state()*
     Get player state.
     Returns: table|nil with fields:
       {state} (string) - "playing" or "paused"
       {playing} (boolean) - true if playing
       {paused} (boolean) - true if paused
 
-require('spicetify').get_duration()                *spicetify.get_duration()*
+require('macos-spotify').get_duration()                *macos-spotify.get_duration()*
     Get track duration.
     Returns: number|nil (duration in milliseconds)
 
-require('spicetify').get_status()                    *spicetify.get_status()*
+require('macos-spotify').get_status()                    *macos-spotify.get_status()*
     Get comprehensive status information.
     Returns: table|nil with complete status data
 
 ==============================================================================
-KEYBINDINGS                                            *spicetify-keybindings*
+KEYBINDINGS                                            *macos-spotify-keybindings*
 
 The plugin does not set any default keybindings to avoid conflicts. Here are
 some suggested keybindings you can add to your configuration:
@@ -255,16 +255,16 @@ some suggested keybindings you can add to your configuration:
 Alternative keybindings using Lua functions directly:
 >lua
     vim.keymap.set('n', '<leader>sp', function()
-      require('spicetify').play_pause()
+      require('macos-spotify').play_pause()
     end, { desc = 'Spotify: Play/Pause' })
     
     vim.keymap.set('n', '<leader>sn', function()
-      require('spicetify').next_track()
+      require('macos-spotify').next_track()
     end, { desc = 'Spotify: Next Track' })
 <
 
 ==============================================================================
-TROUBLESHOOTING                                    *spicetify-troubleshooting*
+TROUBLESHOOTING                                    *macos-spotify-troubleshooting*
 
 Problem: "This plugin only works on macOS" ~
 Solution: This plugin uses AppleScript which is macOS-only. It will not work
@@ -284,7 +284,7 @@ Solution:
 Problem: No notifications appearing ~
 Solution: Check your configuration:
 >lua
-    require('spicetify').setup({
+    require('macos-spotify').setup({
       notifications = true,  -- Make sure this is true
     })
 <
@@ -296,7 +296,7 @@ Solution:
   3. Ensure Neovim 0.7+ is installed
 
 ==============================================================================
-LICENSE                                                    *spicetify-license*
+LICENSE                                                    *macos-spotify-license*
 
 MIT License
 

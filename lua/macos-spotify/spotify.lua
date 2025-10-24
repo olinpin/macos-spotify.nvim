@@ -1,9 +1,9 @@
--- lua/spicetify/spotify.lua
+-- lua/macos-spotify/spotify.lua
 -- Spotify control functions using AppleScript
 -- Author: Oliver Hnat
 -- License: MIT
 
-local utils = require("spicetify.utils")
+local utils = require("macos-spotify.utils")
 local M = {}
 
 -- Internal configuration
